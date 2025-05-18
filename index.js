@@ -4,7 +4,6 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import gradient from 'gradient-string';
 
-// Mostrar título
 console.clear();
 const titulo = figlet.textSync('MayOS', { horizontalLayout: 'full' });
 console.log(gradient.rainbow(titulo));
@@ -17,31 +16,38 @@ const rl = readline.createInterface({
   prompt: chalk.yellow('MayOS ~$ ')
 });
 
-function ejecutarComando(cmd, args = []) {
-  const proceso = spawn(cmd, args, { shell: true });
+function ejecutarComando(input) {
+  const proceso = spawn(input, {
+    shell: true,
+    stdio: ['inherit', 'pipe', 'pipe']
+  });
 
   proceso.stdout.on('data', (data) => {
-    process.stdout.write(chalk.green(`${data}`));
+    process.stdout.write(chalk.green(data.toString()));
   });
 
   proceso.stderr.on('data', (data) => {
-    const mensaje = data.toString();
+    const msg = data.toString().trim();
 
-    console.log(chalk.red(`\n⛔ ERROR: ${mensaje.trim()} ⛔`));
-    console.log(chalk.yellow(`⚠️ ADVERTENCIA: Puede que el comando esté mal o no exista ⚠️\n`));
+    // Mostrar solo si hay contenido
+    if (msg) {
+      console.log(chalk.redBright(`\n⛔ ERROR: ${msg}`));
+      console.log(chalk.yellow(`⚠️ ADVERTENCIA: Puede que el comando esté mal o no exista ⚠️\n`));
+    }
   });
 
   proceso.on('close', () => rl.prompt());
 }
 
 rl.prompt();
+
 rl.on('line', (line) => {
   const input = line.trim();
+  if (!input) return rl.prompt();
   if (input.toLowerCase() === 'exit') {
-    console.log(chalk.blueBright('\nChau chau, cerrando MayOS...'));
-    process.exit(0);
+    console.log(chalk.blueBright('\nHasta luego, cerrando MayOS...'));
+    return process.exit(0);
   }
 
-  const [cmd, ...args] = input.split(' ');
-  ejecutarComando(cmd, args);
+  ejecutarComando(input);
 });
