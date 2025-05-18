@@ -36,7 +36,10 @@ npm install
 ```
 npm run cmd
 ```
-O Si estas en Host que usan de base a CtrlPanel Simplemente pon Instalación Automática.
+O Si estas en Host que usan de base a CtrlPanel Simplemente pon Instalación Automática. Y tener asi las Variables:
+
+![Variables](https://files.catbox.moe/p53c6o.png)
+Y luego resintala el servidor.
 
 Si todo sale Bien Verás algo así:
 
