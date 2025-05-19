@@ -11,7 +11,7 @@ console.clear();
 const titulo = figlet.textSync('MayOS', { horizontalLayout: 'full' });
 console.log(gradient.rainbow(titulo));
 console.log(chalk.cyanBright('Hola! Bienvenido a MayOS, el terminal para host que no te dejan ejecutar comandos!!!!'));
-console.log(chalk.magentaBright('\nHecho por SoyMaycol <3\n'));
+console.log(chalk.magentaBright('\nHecho con amor por SoyMaycol ⊂(◉‿◉)つ\n'));
 
 // Crear readline
 const rl = readline.createInterface({
@@ -19,6 +19,11 @@ const rl = readline.createInterface({
   output: process.stdout,
   prompt: chalk.yellow('MayOS ~$ ')
 });
+
+// HACK: Mantener la salida "viva" cada segundo
+setInterval(() => {
+  process.stdout.write('\u200B'); // Caracter invisible para mantener el flujo activo
+}, 1000);
 
 // Función para limpiar carpeta si ya existe antes de hacer git clone
 function prepararGitClone(input) {
@@ -34,37 +39,28 @@ function prepararGitClone(input) {
   }
 }
 
-// Función para ejecutar comandos en vivo
+// Ejecutar comandos con feedback
 function ejecutarComando(input) {
   prepararGitClone(input);
 
-  const proceso = spawn(input, {
-    shell: true,
-    stdio: ['inherit', 'pipe', 'pipe']
-  });
+  const proceso = spawn(input, { shell: true });
+  let salidaError = '';
 
-  // Mostrar salida estándar en tiempo real
   proceso.stdout.on('data', (data) => {
     process.stdout.write(chalk.green(data.toString()));
   });
 
-  // Mostrar errores en tiempo real
   proceso.stderr.on('data', (data) => {
-    process.stderr.write(chalk.red(data.toString()));
+    salidaError += data.toString();
   });
 
-  // Cuando termina
   proceso.on('close', (code) => {
     if (code !== 0) {
-      console.log(chalk.yellow(`⚠️ El comando terminó con código ${code}\n`));
+      console.log(chalk.redBright(`\n⛔ ERROR: ${salidaError.trim()}`));
+      console.log(chalk.yellow(`⚠️ El comando terminó con código ${code}`));
     }
     rl.prompt();
   });
-
-  // Forzar tiempo real
-  proceso.stdout.setEncoding('utf8');
-  proceso.stderr.setEncoding('utf8');
-  proceso.unref(); // Desvincula el proceso del event loop principal
 }
 
 // Iniciar consola
@@ -75,7 +71,7 @@ rl.on('line', (line) => {
   if (!input) return rl.prompt();
 
   if (input.toLowerCase() === 'exit') {
-    console.log(chalk.blueBright('\nHasta luego, cerrando MayOS...'));
+    console.log(chalk.blueBright('\nHasta luego, cerrando MayOS... (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤'));
     return process.exit(0);
   }
 
