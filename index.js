@@ -34,28 +34,37 @@ function prepararGitClone(input) {
   }
 }
 
-// Función para ejecutar comandos reales
+// Función para ejecutar comandos en vivo
 function ejecutarComando(input) {
-  prepararGitClone(input); // Revisar si es git clone
+  prepararGitClone(input);
 
-  const proceso = spawn(input, { shell: true });
-  let salidaError = '';
+  const proceso = spawn(input, {
+    shell: true,
+    stdio: ['inherit', 'pipe', 'pipe']
+  });
 
+  // Mostrar salida estándar en tiempo real
   proceso.stdout.on('data', (data) => {
     process.stdout.write(chalk.green(data.toString()));
   });
 
+  // Mostrar errores en tiempo real
   proceso.stderr.on('data', (data) => {
-    salidaError += data.toString();
+    process.stderr.write(chalk.red(data.toString()));
   });
 
+  // Cuando termina
   proceso.on('close', (code) => {
     if (code !== 0) {
-      console.log(chalk.redBright(`\n⛔ ERROR: ${salidaError.trim()}`));
-      console.log(chalk.yellow(`⚠️ ADVERTENCIA: El comando falló con código ${code} ⚠️\n`));
+      console.log(chalk.yellow(`⚠️ El comando terminó con código ${code}\n`));
     }
     rl.prompt();
   });
+
+  // Forzar tiempo real
+  proceso.stdout.setEncoding('utf8');
+  proceso.stderr.setEncoding('utf8');
+  proceso.unref(); // Desvincula el proceso del event loop principal
 }
 
 // Iniciar consola
