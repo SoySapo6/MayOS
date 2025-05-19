@@ -66,24 +66,9 @@ npm run web
 📡 Endpoint:
 
 ```
-POST http://tu-web.com/cmd
+https://tuweb/run?cmd=ls
 ```
-
-🧾 Body JSON:
-
-```
-{
-  "command": "ls"
-}
-```
-
-✅ Respuesta:
-
-```
-{
-  "status": "Comando recibido y ejecutándose"
-}
-```
+---
 
 ⚠️ Importante
 
