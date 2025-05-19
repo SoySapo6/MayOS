@@ -11,7 +11,9 @@ console.clear();
 const titulo = figlet.textSync('MayOS', { horizontalLayout: 'full' });
 console.log(gradient.rainbow(titulo));
 console.log(chalk.cyanBright('Hola! Bienvenido a MayOS, el terminal para host que no te dejan ejecutar comandos!!!!'));
-console.log(chalk.cyanBright('Si quieres iniciar tu proyecto ejecuta "mayos --begin TuCarpeta" es totalmente obligatorio. Es para comienzas tu proyecto como bots e otros'));
+console.log(chalk.bgYellow.black('\n ⚠️  ADVERTENCIA  ⚠️'));
+console.log(chalk.yellowBright('¡Usa ') + chalk.greenBright('mayos --begin TuCarpeta') + chalk.yellowBright(' para iniciar tu proyecto (bots y más)!'));
+console.log(chalk.redBright('¡Es obligatorio para comenzar correctamente! ') + chalk.magentaBright('(｡•̀ᴗ-)✧\n'));
 console.log(chalk.magentaBright('\nHecho con amor por SoyMaycol ⊂(◉‿◉)つ\n'));
 
 // Crear readline
