@@ -95,6 +95,8 @@ Usa CORS activado por defecto para permitir peticiones externas.
 
 En los dos métodos aveces no es Tiempo Real.
 
+Si vas a instalar algun proyecto usa un Script para que se muestre en tiempo real 
+
 ---
 
 🧑‍💻 Autor
