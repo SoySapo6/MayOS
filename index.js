@@ -47,7 +47,7 @@ function procesarComandoEspecial(input) {
     const carpeta = match[1];
     const nombreScript = `inicio-${carpeta}.sh`;
     const contenido = `#!/bin/bash
-echo "🐸 Abriendo terminal persistente dentro del proyecto..."
+echo "📂 Proyecto Comenzado!"
 cd "${carpeta}" || exit
 exec bash
 `;
