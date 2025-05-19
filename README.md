@@ -93,7 +93,7 @@ Solo puedes verla en la terminal del host.
 
 Usa CORS activado por defecto para permitir peticiones externas.
 
-
+En los dos métodos aveces no es Tiempo Real.
 
 ---
 
