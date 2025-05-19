@@ -6,11 +6,12 @@ import gradient from 'gradient-string';
 import fs from 'fs';
 import path from 'path';
 
-// Mostrar el banner de MayOS
+// Mostrar banner de MayOS
 console.clear();
 const titulo = figlet.textSync('MayOS', { horizontalLayout: 'full' });
 console.log(gradient.rainbow(titulo));
 console.log(chalk.cyanBright('Hola! Bienvenido a MayOS, el terminal para host que no te dejan ejecutar comandos!!!!'));
+console.log(chalk.cyanBright('Si quieres iniciar tu proyecto ejecuta "mayos --begin TuCarpeta" es totalmente obligatorio. Es para comienzas tu proyecto como bots e otros'));
 console.log(chalk.magentaBright('\nHecho con amor por SoyMaycol ⊂(◉‿◉)つ\n'));
 
 // Crear readline
@@ -20,12 +21,12 @@ const rl = readline.createInterface({
   prompt: chalk.yellow('MayOS ~$ ')
 });
 
-// HACK: Mantener la salida "viva" cada segundo
+// HACK: mantener flujo activo
 setInterval(() => {
-  process.stdout.write('\u200B'); // Caracter invisible para mantener el flujo activo
+  process.stdout.write('\u200B');
 }, 1000);
 
-// Función para limpiar carpeta si ya existe antes de hacer git clone
+// Manejo de git clone
 function prepararGitClone(input) {
   if (input.startsWith('git clone')) {
     const partes = input.split(' ');
@@ -39,8 +40,40 @@ function prepararGitClone(input) {
   }
 }
 
-// Ejecutar comandos con feedback
+// Comando personalizado mayos --begin <carpeta>
+function procesarComandoEspecial(input) {
+  const match = input.match(/^mayos\s+--begin\s+(.+)/);
+  if (match) {
+    const carpeta = match[1];
+    const nombreScript = `inicio-${carpeta}.sh`;
+    const contenido = `#!/bin/bash
+echo "🐸 Abriendo terminal persistente dentro del proyecto..."
+cd "${carpeta}" || exit
+exec bash
+`;
+
+    // Crear script
+    fs.writeFileSync(nombreScript, contenido);
+    fs.chmodSync(nombreScript, 0o755);
+
+    // Ejecutar script
+    const proceso = spawn(`./${nombreScript}`, { stdio: 'inherit', shell: true });
+
+    proceso.on('close', () => {
+      // Eliminar script después de ejecutarlo
+      fs.unlinkSync(nombreScript);
+      console.log(chalk.gray(`Script '${nombreScript}' eliminado.`));
+      rl.prompt();
+    });
+
+    return true;
+  }
+  return false;
+}
+
+// Ejecutar comandos normales
 function ejecutarComando(input) {
+  if (procesarComandoEspecial(input)) return;
   prepararGitClone(input);
 
   const proceso = spawn(input, { shell: true });
