@@ -1,45 +1,101 @@
 import express from 'express';
-import cors from 'cors';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
+import figlet from 'figlet';
+import gradient from 'gradient-string';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-app.use(cors());
-app.use(express.json());
-
+// Banner MayOS
 console.clear();
-console.log(chalk.magentaBright('\n[MayOS-Server] Terminal API iniciada con éxito\n'));
+const titulo = figlet.textSync('MayOS', { horizontalLayout: 'full' });
+console.log(gradient.rainbow(titulo));
+console.log(chalk.cyanBright('Hola! Bienvenido a MayOS, el terminal para host que no te dejan ejecutar comandos!!!!'));
+console.log(chalk.bgYellow.black('\n ⚠️  ADVERTENCIA  ⚠️'));
+console.log(chalk.yellowBright('¡Usa ') + chalk.greenBright('mayos --begin TuCarpeta') + chalk.yellowBright(' para iniciar tu proyecto (bots y más)!'));
+console.log(chalk.redBright('¡Es obligatorio para comenzar correctamente! ') + chalk.magentaBright('(｡•̀ᴗ-)✧\n'));
+console.log(chalk.magentaBright('\nHecho con amor por SoyMaycol ⊂(◉‿◉)つ\n'));
 
-app.post('/cmd', (req, res) => {
-  const { command } = req.body;
-
-  if (!command || typeof command !== 'string') {
-    return res.status(400).json({ error: 'Comando inválido o vacío.' });
+// MAYOS SPECIAL
+function prepararGitClone(input) {
+  if (input.startsWith('git clone')) {
+    const partes = input.split(' ');
+    const repoUrl = partes[partes.length - 1];
+    const repoName = repoUrl.split('/').pop().replace('.git', '');
+    const ruta = path.join(process.cwd(), repoName);
+    if (fs.existsSync(ruta)) {
+      fs.rmSync(ruta, { recursive: true, force: true });
+      console.log(chalk.gray(`Directorio '${repoName}' eliminado para clonar de nuevo.`));
+    }
   }
+}
 
-  const [cmd, ...args] = command.split(' ');
+// Comando especial mayos --begin
+function procesarComandoEspecial(input) {
+  const match = input.match(/^mayos\s+--begin\s+(.+)/);
+  if (match) {
+    const carpeta = match[1];
+    const nombreScript = `inicio-${carpeta}.sh`;
+    const contenido = `#!/bin/bash
+echo "📂 Proyecto Comenzado!"
+cd "${carpeta}" || exit
+exec bash
+`;
 
-  console.log(chalk.yellow(`\n[MayOS-API] Ejecutando comando: ${command}`));
+    fs.writeFileSync(nombreScript, contenido);
+    fs.chmodSync(nombreScript, 0o755);
 
-  const proceso = spawn(cmd, args, { shell: true });
+    const proceso = spawn(`./${nombreScript}`, { stdio: 'inherit', shell: true });
+
+    proceso.on('close', () => {
+      fs.unlinkSync(nombreScript);
+      console.log(chalk.gray(`Script '${nombreScript}' eliminado.`));
+    });
+
+    return true;
+  }
+  return false;
+}
+
+// Ejecutar comandos reales
+function ejecutarComando(input) {
+  if (!input) return;
+  if (procesarComandoEspecial(input)) return;
+  prepararGitClone(input);
+
+  const proceso = spawn(input, { shell: true });
 
   proceso.stdout.on('data', (data) => {
-    process.stdout.write(chalk.green(`[stdout] ${data}`));
+    process.stdout.write(chalk.green(data.toString()));
   });
 
   proceso.stderr.on('data', (data) => {
-    process.stdout.write(chalk.red(`[stderr] ${data}`));
+    process.stdout.write(chalk.red(data.toString()));
   });
 
   proceso.on('close', (code) => {
-    console.log(chalk.blueBright(`[MayOS-API] Comando finalizado con código: ${code}\n`));
+    if (code !== 0) {
+      console.log(chalk.redBright(`⛔ ERROR: El comando falló con código ${code}`));
+    }
   });
+}
 
-  res.status(200).json({ status: 'Comando recibido y ejecutándose' });
+// Endpoint GET
+app.get('/run', (req, res) => {
+  const comando = req.query.cmd;
+  if (!comando) {
+    res.status(400).send('Falta el parámetro ?cmd=');
+    return;
+  }
+
+  // Ejecutar pero no responder nada visible
+  ejecutarComando(comando);
+  res.status(200).end(); // silencio absoluto jeje
 });
 
 app.listen(PORT, () => {
-  console.log(chalk.cyanBright(`[MayOS-Server] Escuchando en http://localhost:${PORT}`));
+  console.log(chalk.greenBright(`\nServidor MayOS corriendo en http://localhost:${PORT}/run?cmd=tucomando\n`));
 });
