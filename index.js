@@ -12,7 +12,7 @@ const titulo = figlet.textSync('MayOS', { horizontalLayout: 'full' });
 console.log(gradient.rainbow(titulo));
 console.log(chalk.cyanBright('Hola! Bienvenido a MayOS, el terminal para host que no te dejan ejecutar comandos!!!!'));
 console.log(chalk.bgYellow.black('\n ⚠️  ADVERTENCIA  ⚠️'));
-console.log(chalk.yellowBright('¡Usa ') + chalk.greenBright('mayos --begin TuCarpeta') + chalk.yellowBright(' para iniciar tu proyecto (bots y más)!'));
+console.log(chalk.yellowBright('¡Usa ') + chalk.greenBright('"mayos --begin TuCarpeta"') + chalk.yellowBright(' para iniciar tu proyecto (bots y más)!'));
 console.log(chalk.redBright('¡Es obligatorio para comenzar correctamente! ') + chalk.magentaBright('(｡•̀ᴗ-)✧\n'));
 console.log(chalk.magentaBright('\nHecho con amor por SoyMaycol ⊂(◉‿◉)つ\n'));
 
@@ -49,7 +49,7 @@ function procesarComandoEspecial(input) {
     const carpeta = match[1];
     const nombreScript = `inicio-${carpeta}.sh`;
     const contenido = `#!/bin/bash
-echo "📂 Proyecto Comenzado!"
+echo "📂  Proyecto Comenzado!"
 cd "${carpeta}" || exit
 exec bash
 `;
