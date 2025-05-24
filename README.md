@@ -87,4 +87,3 @@ Si vas a instalar algun proyecto usa un Script para que se muestre en tiempo rea
 🧑‍💻 Autor
 
 Creado con amor por SoyMaycol <3
-Un niño programador con más flow que tu ISP.
