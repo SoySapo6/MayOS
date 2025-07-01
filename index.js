@@ -1,6 +1,6 @@
-// ✧･ﾟ: *✧･ﾟ:* Terminal Real con MayContainers *:･ﾟ✧*:･ﾟ✧
 import readline from 'readline';
-import { createContainer, quickRun } from '@soymaycol/maycontainers';
+import fs from 'fs';
+import { createContainer } from '@soymaycol/maycontainers';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -9,48 +9,50 @@ const rl = readline.createInterface({
 
 const container = createContainer({
   name: 'myapp',
-  distro: 'alpine', // alpine, debian, ubuntu
-  version: 'latest'
+  distro: 'alpine',
+  version: 'latest',
+  persist: true, // Si tu módulo soporta esto, si no lo ignora, lo dejamos igual
 });
 
+const dataDir = './mycontainer-data';
+
 async function main() {
-  console.log('⊂(・▽・)⊃ Iniciando contenedor...');
+  console.log('⊂(・▽・)⊃ Verificando contenedor...');
 
-  await container.init();
-  console.log('(｡･ω･｡)ﾉ♡ Contenedor listo UwU');
+  if (!fs.existsSync(dataDir)) {
+    console.log('(｡･ω･｡)ﾉ♡ Primera vez, creando contenedor...');
+    fs.mkdirSync(dataDir, { recursive: true });
+    await container.init({ storage: dataDir });
+    await container.run('apk add nodejs npm').catch(() => {});
+  } else {
+    console.log('(≧◡≦) Contenedor detectado, reutilizando...');
+    await container.init({ storage: dataDir });
+  }
 
-  await container.run('echo "Hello desde el contenedor UwU"');
-  await container.run('apk add nodejs npm');
-  await container.run('node --version');
-
-  console.log('✧ Terminal lista, escribe comandos ✧');
+  console.log('✧ Terminal lista, escribe tus comandos ✧');
   promptInput();
 }
 
 function promptInput() {
-  rl.question('🐚 MayContainer ~$ ', async (cmd) => {
+  rl.question('🐚 MyApp ~$ ', async (cmd) => {
     if (cmd.trim() === 'exit') {
       console.log('Saliendo... (ಥ﹏ಥ)');
-      await container.destroy();
+      await container.destroy().catch(() => {}); // Silenciar errores
       rl.close();
       process.exit(0);
     }
 
     try {
       const output = await container.run(cmd);
-      if (output.stdout) console.log(output.stdout.trim());
-      if (output.stderr) console.error(output.stderr.trim());
-    } catch (err) {
-      // console.error('Error ejecutando comando:', err.message); que no diga nada na mas xD
+
+      if (output?.stdout) console.log(output.stdout.trim());
+      if (output?.stderr) console.error(output.stderr.trim());
+    } catch {
+      // Silencio absoluto, no queremos spam ni error feo
     }
 
     promptInput();
   });
 }
 
-main().catch(console.error);
-
-// Quick Run fuera del contenedor, solo para probar
-quickRun('echo "Quick comando ejecutado fuera"', { distro: 'alpine' })
-  .then(() => console.log('Quick comando listo (≧◡≦)'))
-  .catch(console.error);
+main().catch(() => {});
