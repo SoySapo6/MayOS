@@ -1,5 +1,4 @@
 import readline from 'readline';
-import fs from 'fs';
 import { createContainer } from '@soymaycol/maycontainers';
 
 const rl = readline.createInterface({
@@ -9,50 +8,49 @@ const rl = readline.createInterface({
 
 const container = createContainer({
   name: 'myapp',
-  distro: 'alpine',
-  version: 'latest',
-  persist: true, // Si tu módulo soporta esto, si no lo ignora, lo dejamos igual
+  distro: 'alpine', // alpine, debian, ubuntu
+  version: 'latest'
 });
 
-const dataDir = './mycontainer-data';
+let containerReady = false;
 
 async function main() {
-  console.log('⊂(・▽・)⊃ Verificando contenedor...');
+  console.log('⊂(・▽・)⊃ Iniciando contenedor solo una vez...');
 
-  if (!fs.existsSync(dataDir)) {
-    console.log('(｡･ω･｡)ﾉ♡ Primera vez, creando contenedor...');
-    fs.mkdirSync(dataDir, { recursive: true });
-    await container.init({ storage: dataDir });
-    await container.run('apk add nodejs npm').catch(() => {});
-  } else {
-    console.log('(≧◡≦) Contenedor detectado, reutilizando...');
-    await container.init({ storage: dataDir });
+  if (!containerReady) {
+    await container.init();
+    await container.run('apk add nodejs npm curl').catch(() => {}); // Instalamos curl si no está
+    containerReady = true;
   }
 
-  console.log('✧ Terminal lista, escribe tus comandos ✧');
+  console.log('(｡･ω･｡)ﾉ♡ Contenedor listo, Terminal activa UwU');
   promptInput();
 }
 
 function promptInput() {
   rl.question('🐚 MyApp ~$ ', async (cmd) => {
     if (cmd.trim() === 'exit') {
-      console.log('Saliendo... (ಥ﹏ಥ)');
-      await container.destroy().catch(() => {}); // Silenciar errores
+      console.log('Cerrando contenedor, bye bye (ಥ﹏ಥ)');
+      await container.destroy().catch(() => {});
       rl.close();
       process.exit(0);
     }
 
+    if (!containerReady) {
+      console.log('Espera que el contenedor termine de inicializarse UwU');
+      return promptInput();
+    }
+
     try {
       const output = await container.run(cmd);
-
       if (output?.stdout) console.log(output.stdout.trim());
       if (output?.stderr) console.error(output.stderr.trim());
     } catch {
-      // Silencio absoluto, no queremos spam ni error feo
+      // Error silenciado para que no reviente el chat
     }
 
     promptInput();
   });
 }
 
-main().catch(() => {});
+main().catch(console.error);
