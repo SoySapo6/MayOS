@@ -41,7 +41,7 @@ function promptInput() {
       if (output.stdout) console.log(output.stdout.trim());
       if (output.stderr) console.error(output.stderr.trim());
     } catch (err) {
-      console.error('Error ejecutando comando:', err.message);
+      // console.error('Error ejecutando comando:', err.message); que no diga nada na mas xD
     }
 
     promptInput();
