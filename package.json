@@ -8,6 +8,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@soymaycol/maycontainers": "^1.2.1"
+    "@soymaycol/maycontainers": "^1.2.3"
   }
 }
