@@ -8,37 +8,30 @@ const rl = readline.createInterface({
 
 const container = createContainer({
   name: 'myapp',
-  distro: 'alpine', // alpine, debian, ubuntu
+  distro: 'alpine',
   version: 'latest'
 });
 
-let containerReady = false;
-
 async function main() {
-  console.log('⊂(・▽・)⊃ Iniciando contenedor solo una vez...');
+  console.log('⊂(・▽・)⊃ Iniciando contenedor una sola vez...');
 
-  if (!containerReady) {
-    await container.init();
-    await container.run('apk add nodejs npm curl').catch(() => {}); // Instalamos curl si no está
-    containerReady = true;
-  }
+  await container.init();
+  console.log('(｡･ω･｡)ﾉ♡ Contenedor listo UwU');
 
-  console.log('(｡･ω･｡)ﾉ♡ Contenedor listo, Terminal activa UwU');
+  await container.run('apk add nodejs npm').catch(() => {});
+  await container.run('node --version').catch(() => {});
+
+  console.log('✧ Terminal interactiva lista, escribe tus comandos ✧');
   promptInput();
 }
 
 function promptInput() {
   rl.question('🐚 MyApp ~$ ', async (cmd) => {
     if (cmd.trim() === 'exit') {
-      console.log('Cerrando contenedor, bye bye (ಥ﹏ಥ)');
+      console.log('Saliendo y destruyendo contenedor... (ಥ﹏ಥ)');
       await container.destroy().catch(() => {});
       rl.close();
       process.exit(0);
-    }
-
-    if (!containerReady) {
-      console.log('Espera que el contenedor termine de inicializarse UwU');
-      return promptInput();
     }
 
     try {
@@ -46,11 +39,11 @@ function promptInput() {
       if (output?.stdout) console.log(output.stdout.trim());
       if (output?.stderr) console.error(output.stderr.trim());
     } catch {
-      // Error silenciado para que no reviente el chat
+      // Silencio total para no mostrar errores feos
     }
 
     promptInput();
   });
 }
 
-main().catch(console.error);
+main().catch(() => {});
